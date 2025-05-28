@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:language_world/routes/routes.dart';
 import 'package:language_world/widgets/login_form.dart'; 
 
 class LoginScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class LoginScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(context, Routes.register, (route) => false);
           },
         ),
       ),

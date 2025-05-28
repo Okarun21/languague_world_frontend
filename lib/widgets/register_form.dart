@@ -11,7 +11,7 @@ class RegisterForm extends StatefulWidget {
   State<RegisterForm> createState() => _RegisterFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm> {
+class _RegisterFormState  extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
   final _controller = RegisterController();
 
@@ -26,12 +26,25 @@ class _RegisterFormState extends State<RegisterForm> {
 
     if (_formKey.currentState!.validate()) {
       await _controller.registerUser(
-        context,
+        onSuccess: () {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuario registrado con éxito')),
+          );
+          _controller.goToLogin(context);
+        },
         onEmailExists: () {
+          if (!mounted) return;
           setState(() {
             _emailBackendError = 'El correo ya está en uso';
           });
           _formKey.currentState!.validate();
+        },
+        onError: (message) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $message')),
+          );
         },
       );
     }

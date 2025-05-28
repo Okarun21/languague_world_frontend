@@ -14,28 +14,26 @@ class RegisterController {
     passwordController.dispose();
   }
 
-  Future<void> registerUser(
-    BuildContext context, {
+  Future<void> registerUser({
+    required VoidCallback onSuccess,
     required VoidCallback onEmailExists,
+    required Function(String) onError,
   }) async {
     final name = nombreController.text.trim();
     final email = correoController.text.trim();
     final password = passwordController.text;
 
     try {
-      await _apiService.registerUser(name, email, password);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuario registrado con éxito')),
-      );
-      goToLogin(context);
+      final account = await _apiService.registerUser(name, email, password);
+      final userId = account.id;
+
+      onSuccess();
     } catch (e) {
       final errorMsg = e.toString().toLowerCase();
       if (errorMsg.contains('email') && errorMsg.contains('existe')) {
         onEmailExists();
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        onError(e.toString());
       }
     }
   }

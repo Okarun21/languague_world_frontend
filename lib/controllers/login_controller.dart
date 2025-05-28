@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-import '../routes/routes.dart';
-
-enum LoginResult {
-  success,
-  invalidEmail,
-  invalidPassword,
-  error,
-}
 
 class LoginController {
   final correoController = TextEditingController();
   final passwordController = TextEditingController();
-
   final ApiService _apiService = ApiService();
 
   void dispose() {
@@ -20,35 +12,20 @@ class LoginController {
     passwordController.dispose();
   }
 
-  void goToRegister(BuildContext context) {
-    Navigator.pushNamed(context, Routes.register);
-  }
+  Future<void> loginUser({
+    required VoidCallback onSuccess,
+    required Function(String) onError,
+  }) async {
+    final email = correoController.text.trim();
+    final password = passwordController.text;
 
-  Future<LoginResult> loginUser(BuildContext context) async {
     try {
-      await _apiService.loginUser(
-        correoController.text,
-        passwordController.text,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inicio de sesión exitoso')),
-      );
-      Navigator.pushNamedAndRemoveUntil(context, Routes.home, (route) => false);
-      return LoginResult.success;
+      final account = await _apiService.loginUser(email, password);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', account.id);
+      onSuccess();
     } catch (e) {
-      final errorMessage = e.toString().toLowerCase();
-
-      if (errorMessage.contains('email') || errorMessage.contains('correo')) {
-        return LoginResult.invalidEmail;
-      } else if (errorMessage.contains('password') || errorMessage.contains('contraseña')) {
-        return LoginResult.invalidPassword;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-        return LoginResult.error;
-      }
+      onError(e.toString());
     }
   }
 }

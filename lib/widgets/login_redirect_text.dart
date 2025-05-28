@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class LoginRedirectText extends StatelessWidget {
   final VoidCallback onTap;
 
-  const LoginRedirectText({required this.onTap});
+  const LoginRedirectText({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
