@@ -6,17 +6,24 @@ import 'package:language_world/controllers/picture_perfil_controller.dart';
 import 'package:language_world/routes/routes.dart';
 
 void main() {
+  // Configurar manejo global de errores
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    // Aquí puedes agregar lógica para reportar errores a un servicio externo
+  };
+
   runApp(
     MultiProvider(
       providers: [
         Provider(create: (context) => ApiService()),
         ChangeNotifierProvider(create: (context) => PicturePerfilController(context.read<ApiService>())),
-         ChangeNotifierProvider(create: (_) => NivelProvider()),
+        ChangeNotifierProvider(create: (_) => NivelProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

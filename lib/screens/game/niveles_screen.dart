@@ -5,7 +5,6 @@ import 'package:language_world/routes/routes.dart';
 import 'package:language_world/services/api_service.dart';
 import 'package:provider/provider.dart';
 
-
 class NivelScreen extends StatefulWidget {
   const NivelScreen({super.key});
 
@@ -28,7 +27,16 @@ class _NivelScreenState extends State<NivelScreen> {
     final nivelProvider = Provider.of<NivelProvider>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Selecciona un Nivel')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navegar a la ruta home y limpiar la pila para evitar volver a esta pantalla
+            Navigator.pushNamedAndRemoveUntil(context, Routes.home, (route) => false);
+          },
+        ),
+        title: const Text('Selecciona un Nivel'),
+      ),
       body: FutureBuilder<List<Nivel>>(
         future: futureNiveles,
         builder: (context, snapshot) {

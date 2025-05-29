@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ProfileInfoForHome extends StatelessWidget {
-  final String profileImageUrl;
+  final String? profileImageUrl;
   final String username;
   final int nivel;
 
   const ProfileInfoForHome({
     super.key,
-    required this.profileImageUrl,
+    this.profileImageUrl,
     required this.username,
     required this.nivel,
   });
@@ -16,19 +16,21 @@ class ProfileInfoForHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Foto perfil cuadrada
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
+        if (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+          ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: NetworkImage(profileImageUrl),
+            child: Image.network(
+              profileImageUrl!,
+              width: 56,
+              height: 56,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.error, size: 56);
+              },
             ),
           ),
-        ),
-        const SizedBox(width: 16),
+        if (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+          const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -42,8 +44,7 @@ class ProfileInfoForHome extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(6),
