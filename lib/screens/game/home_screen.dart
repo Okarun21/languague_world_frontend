@@ -71,24 +71,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _salirApp() {
     if (Platform.isAndroid) {
-      SystemNavigator.pop(); // Cierra la app en Android
+      SystemNavigator.pop();
     } else if (Platform.isIOS) {
-      exit(0); // Cierra la app en iOS (no recomendado por Apple)
+      exit(0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (errorMessage != null) {
-      return Scaffold(
-        body: Center(child: Text(errorMessage!)),
-      );
+      return Scaffold(body: Center(child: Text(errorMessage!)));
     }
 
     return Scaffold(
@@ -96,14 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Perfil y configuración en fila con selector de idioma debajo
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Columna con perfil + selector idioma
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -126,21 +120,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  // Botón configuración
                   IconButton(
                     icon: const Icon(Icons.settings),
                     iconSize: 28,
-                    onPressed: () {
-                      // Acción configuración
-                    },
+                    onPressed: () {},
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: 40),
-
-            // Avatar centrado sin recortes ni formas
             Expanded(
               child: Center(
                 child: Image.network(
@@ -152,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Botón jugar centrado abajo con padding
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Center(
@@ -170,8 +158,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 14,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -183,7 +173,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Botón salir centrado abajo con padding
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Center(
@@ -199,8 +188,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 14,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

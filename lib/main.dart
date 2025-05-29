@@ -6,10 +6,8 @@ import 'package:language_world/controllers/picture_perfil_controller.dart';
 import 'package:language_world/routes/routes.dart';
 
 void main() {
-  // Configurar manejo global de errores
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
-    // Aquí puedes agregar lógica para reportar errores a un servicio externo
   };
 
   runApp(

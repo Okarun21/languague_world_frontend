@@ -23,7 +23,8 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
   @override
   void initState() {
     super.initState();
-    final nivel = Provider.of<NivelProvider>(context, listen: false).nivelSeleccionado!;
+    final nivel =
+        Provider.of<NivelProvider>(context, listen: false).nivelSeleccionado!;
     _cartasBarajadas = List.of(nivel.cartas);
     _cartasBarajadas.shuffle();
     visibles = List.filled(_cartasBarajadas.length, false);
@@ -38,7 +39,8 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
       if (indexCartaSeleccionada == null) {
         indexCartaSeleccionada = index;
       } else {
-        if (_cartasBarajadas[index].parejaId == _cartasBarajadas[indexCartaSeleccionada!].idCarta) {
+        if (_cartasBarajadas[index].parejaId ==
+            _cartasBarajadas[indexCartaSeleccionada!].idCarta) {
           indexCartaSeleccionada = null;
 
           if (visibles.every((v) => v)) {
@@ -67,14 +69,11 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
     if (nivel == null) {
       return Scaffold(
         appBar: AppBar(
-          centerTitle: false,          // Título alineado a la izquierda
-          titleSpacing: 16,            // Espacio desde el borde izquierdo
+          centerTitle: false,
+          titleSpacing: 16,
           title: const Text(
             'Memorama',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
         body: const Center(child: Text('No se ha seleccionado ningún nivel')),
@@ -83,14 +82,11 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,            // Título alineado a la izquierda
-        titleSpacing: 16,              // Espacio desde el borde izquierdo
+        centerTitle: false,
+        titleSpacing: 16,
         title: Text(
           'Memorama - ${nivel.nombre}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
       ),
       body: Padding(

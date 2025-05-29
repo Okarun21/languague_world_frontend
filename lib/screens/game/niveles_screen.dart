@@ -31,8 +31,11 @@ class _NivelScreenState extends State<NivelScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Navegar a la ruta home y limpiar la pila para evitar volver a esta pantalla
-            Navigator.pushNamedAndRemoveUntil(context, Routes.home, (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              Routes.home,
+              (route) => false,
+            );
           },
         ),
         title: const Text('Selecciona un Nivel'),
@@ -54,7 +57,9 @@ class _NivelScreenState extends State<NivelScreen> {
                 final nivel = niveles[index];
                 return ListTile(
                   title: Text(nivel.nombre),
-                  subtitle: Text('Dificultad: ${nivel.dificultad} - Idioma: ${nivel.idioma}'),
+                  subtitle: Text(
+                    'Dificultad: ${nivel.dificultad} - Idioma: ${nivel.idioma}',
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     nivelProvider.seleccionarNivel(nivel);

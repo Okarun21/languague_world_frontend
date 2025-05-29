@@ -32,28 +32,27 @@ class _PicturePerfilScreenState extends State<PicturePerfilScreen> {
       setState(() {
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los iconos: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al cargar los iconos: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Selecciona tu foto de perfil'),
-      ),
+      appBar: AppBar(title: const Text('Selecciona tu foto de perfil')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: isLoading
-              ? const CircularProgressIndicator()
-              : SelectIconPerfil(
-                  icons: icons,
-                  initialIcon: null,
-                  userId: '', // Aquí debes pasar el userId real
-                ),
+          child:
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : SelectIconPerfil(
+                    icons: icons,
+                    initialIcon: null,
+                    userId: '',
+                  ),
         ),
       ),
     );

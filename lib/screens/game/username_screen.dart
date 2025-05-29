@@ -38,7 +38,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
       if (userId == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: No se encontró el ID de la cuenta')),
+          const SnackBar(
+            content: Text('Error: No se encontró el ID de la cuenta'),
+          ),
         );
         return;
       }
@@ -51,12 +53,13 @@ class _UsernameScreenState extends State<UsernameScreen> {
           });
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('El nombre de usuario ya está en uso')),
+            const SnackBar(
+              content: Text('El nombre de usuario ya está en uso'),
+            ),
           );
           return;
         }
 
-        // Usa el parámetro correcto según la nueva definición de ApiService
         await _apiService.createProfile(
           userId: userId,
           nombreUsuario: nombreUsuario,
@@ -76,9 +79,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
           backendError = 'Error al crear el perfil: $e';
         });
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al crear el perfil: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al crear el perfil: $e')));
       }
     }
   }
@@ -92,9 +95,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Username'),
-      ),
+      appBar: AppBar(title: const Text('Username')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

@@ -13,7 +13,6 @@ class _SelectIdiomState extends State<SelectIdiom> {
   final languages = [
     {'code': 'es', 'name': 'Español'},
     {'code': 'en', 'name': 'English'},
-    // Agrega más idiomas si quieres
   ];
 
   @override
@@ -26,7 +25,7 @@ class _SelectIdiomState extends State<SelectIdiom> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1), // corregido aquí
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -50,7 +49,7 @@ class _SelectIdiomState extends State<SelectIdiom> {
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).primaryColor.withOpacity(0.3), // corregido aquí
+                color: Theme.of(context).primaryColor.withOpacity(0.3), 
                 width: 1,
               ),
             ),
@@ -64,7 +63,6 @@ class _SelectIdiomState extends State<SelectIdiom> {
                 setState(() {
                   selectedLanguage = newValue;
                 });
-                // Aquí puedes guardar localmente el idioma seleccionado si quieres
               },
               items: languages.map<DropdownMenuItem<String>>((lang) {
                 return DropdownMenuItem<String>(
