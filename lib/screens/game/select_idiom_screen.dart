@@ -13,14 +13,7 @@ class SelectIdiomScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 4,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: SelectIdiom(),
-          ),
-        ),
-      ),
+      body: const Center(child: SelectIdiom()),
     );
   }
 }

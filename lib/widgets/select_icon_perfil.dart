@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:language_world/controllers/picture_perfil_controller.dart';
+import 'package:language_world/models/profile_icon.dart';
 import 'package:language_world/routes/routes.dart';
-import '../models/profile_icon.dart';
 
 class SelectIconPerfil extends StatefulWidget {
   final List<ProfileIcon> icons;
   final ProfileIcon? initialIcon;
+  final String userId;
 
   const SelectIconPerfil({
     super.key,
     required this.icons,
-    this.initialIcon, required String userId,
+    this.initialIcon,
+    required this.userId,
   });
 
   @override
@@ -28,6 +32,7 @@ class _SelectIconPerfilState extends State<SelectIconPerfil> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<PicturePerfilController>(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -39,7 +44,7 @@ class _SelectIconPerfilState extends State<SelectIconPerfil> {
           },
           child: CircleAvatar(
             radius: 48,
-            backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+            backgroundColor: Theme.of(context).primaryColor.withAlpha(25),
             child: selectedIcon != null
                 ? CircleAvatar(
                     radius: 44,
@@ -73,7 +78,7 @@ class _SelectIconPerfilState extends State<SelectIconPerfil> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withAlpha(25),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -122,8 +127,19 @@ class _SelectIconPerfilState extends State<SelectIconPerfil> {
                 ),
                 elevation: 4,
               ),
-              onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(context, Routes.selectIdiom, (route) => false);
+              onPressed: () async {
+                try {
+                  await controller.saveProfileIcon(selectedIcon!.imageUrl);
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    Routes.selectIdiom,
+                    (route) => false,
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al guardar el icono: $e')),
+                  );
+                }
               },
               child: const Text(
                 'OK',

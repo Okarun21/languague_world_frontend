@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:language_world/models/profile_icon.dart';
-import 'package:language_world/services/api_service.dart';
 import 'package:language_world/widgets/select_icon_perfil.dart';
-
+import 'package:language_world/services/api_service.dart';
+import 'package:language_world/models/profile_icon.dart';
 
 class PicturePerfilScreen extends StatefulWidget {
   const PicturePerfilScreen({super.key});
@@ -13,7 +12,7 @@ class PicturePerfilScreen extends StatefulWidget {
 
 class _PicturePerfilScreenState extends State<PicturePerfilScreen> {
   List<ProfileIcon> icons = [];
-  bool loading = true;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -21,18 +20,21 @@ class _PicturePerfilScreenState extends State<PicturePerfilScreen> {
     _loadIcons();
   }
 
-  void _loadIcons() async {
+  Future<void> _loadIcons() async {
     try {
       final apiService = ApiService();
-      final result = await apiService.fetchProfileIcons();
+      final loadedIcons = await apiService.fetchProfileIcons();
       setState(() {
-        icons = result;
-        loading = false;
+        icons = loadedIcons;
+        isLoading = false;
       });
-    } catch (error) {
+    } catch (e) {
       setState(() {
-        loading = false;
+        isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar los iconos: $e')),
+      );
     }
   }
 
@@ -41,17 +43,16 @@ class _PicturePerfilScreenState extends State<PicturePerfilScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Selecciona tu foto de perfil'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
       ),
       body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: loading
+          child: isLoading
               ? const CircularProgressIndicator()
               : SelectIconPerfil(
-                  icons: icons, userId: '',
+                  icons: icons,
+                  initialIcon: null,
+                  userId: '', // Aquí debes pasar el userId real
                 ),
         ),
       ),

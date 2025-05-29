@@ -13,7 +13,7 @@ class _SelectIdiomState extends State<SelectIdiom> {
   final languages = [
     {'code': 'es', 'name': 'Español'},
     {'code': 'en', 'name': 'English'},
-    // Agrega otros idiomas aquí
+    // Agrega más idiomas si quieres
   ];
 
   @override
@@ -26,7 +26,7 @@ class _SelectIdiomState extends State<SelectIdiom> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1), // corregido aquí
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -45,15 +45,12 @@ class _SelectIdiomState extends State<SelectIdiom> {
           ),
           const SizedBox(height: 24),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                color: Theme.of(context).primaryColor.withOpacity(0.3), // corregido aquí
                 width: 1,
               ),
             ),
@@ -67,8 +64,7 @@ class _SelectIdiomState extends State<SelectIdiom> {
                 setState(() {
                   selectedLanguage = newValue;
                 });
-                // Aquí puedes guardar el idioma seleccionado o cambiar el idioma de la app
-                // Ejemplo: Provider.of<LanguageProvider>(context, listen: false).setLocale(newValue!);
+                // Aquí puedes guardar localmente el idioma seleccionado si quieres
               },
               items: languages.map<DropdownMenuItem<String>>((lang) {
                 return DropdownMenuItem<String>(

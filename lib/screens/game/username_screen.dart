@@ -22,9 +22,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
     return prefs.getString('userId');
   }
 
-  Future<bool> usernameExists(String username) async {
+  Future<bool> usernameExists(String nombreUsuario) async {
     try {
-      final response = await _apiService.usernameExists(username);
+      final response = await _apiService.usernameExists(nombreUsuario.trim());
       return response;
     } catch (e) {
       return false;
@@ -33,7 +33,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      final username = _usernameController.text;
+      final nombreUsuario = _usernameController.text.trim();
       final userId = await getUserId();
       if (userId == null) {
         if (!mounted) return;
@@ -43,9 +43,8 @@ class _UsernameScreenState extends State<UsernameScreen> {
         return;
       }
 
-      // Validar que el username no exista
       try {
-        final exists = await usernameExists(username);
+        final exists = await usernameExists(nombreUsuario);
         if (exists) {
           setState(() {
             backendError = 'El nombre de usuario ya está en uso';
@@ -57,13 +56,21 @@ class _UsernameScreenState extends State<UsernameScreen> {
           return;
         }
 
-        await _apiService.createProfile(userId: userId, username: username);
+        // Usa el parámetro correcto según la nueva definición de ApiService
+        await _apiService.createProfile(
+          userId: userId,
+          nombreUsuario: nombreUsuario,
+        );
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Perfil creado con éxito')),
         );
 
-        Navigator.pushNamedAndRemoveUntil(context, Routes.picturePerfil, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          Routes.picturePerfil,
+          (route) => false,
+        );
       } catch (e) {
         setState(() {
           backendError = 'Error al crear el perfil: $e';

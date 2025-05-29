@@ -13,8 +13,8 @@ class LoginController {
   }
 
   Future<void> loginUser({
-    required VoidCallback onSuccess,
-    required Function(String) onError,
+    required void Function(String userId) onSuccess,
+    required void Function(String message) onError,
   }) async {
     final email = correoController.text.trim();
     final password = passwordController.text;
@@ -23,7 +23,7 @@ class LoginController {
       final account = await _apiService.loginUser(email, password);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', account.id);
-      onSuccess();
+      onSuccess(account.id);
     } catch (e) {
       onError(e.toString());
     }
