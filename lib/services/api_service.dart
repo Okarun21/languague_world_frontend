@@ -24,7 +24,7 @@ class ApiService {
     }
   }
 
-  // Registro (opcional)
+  // Registro
   Future<AccountModel> registerUser(
     String name,
     String email,

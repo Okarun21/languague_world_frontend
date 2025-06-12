@@ -1,7 +1,7 @@
 class Carta {
   final String idCarta;
-  final String tipo; // 'imagen' o 'texto'
-  final String valor; // URL o texto
+  final String tipo; 
+  final String valor; 
   final int posicion;
   final String parejaId;
 
