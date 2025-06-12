@@ -5,7 +5,7 @@ import 'package:language_world/models/profile_icon.dart';
 import '../models/account_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  static const String baseUrl = 'https://languague-world-backend.onrender.com';
 
   // Login
   Future<AccountModel> loginUser(String email, String password) async {
