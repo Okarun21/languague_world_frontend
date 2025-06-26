@@ -4,23 +4,49 @@ import 'package:language_world/models/levels.dart';
 import 'package:language_world/models/profile_icon.dart';
 import '../models/account_model.dart';
 
-class ApiService {
-  static const String baseUrl = 'https://languague-world-backend.onrender.com';
+class ApiResponse<T> {
+  final T? data;
+  final String? error;
 
-  // Login
-  Future<AccountModel> loginUser(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/users/authenticate'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return AccountModel.fromJson(data);
-    } else {
-      final error =
-          jsonDecode(response.body)['error'] ?? 'Error de autenticación';
-      throw Exception(error);
+  ApiResponse({this.data, this.error});
+}
+
+class ApiService {
+  static const String baseUrl = 'http://10.0.2.2:3000';
+
+  // Login sin lanzar excepciones, devuelve ApiResponse con data o error
+  Future<ApiResponse<AccountModel>> loginUser(
+    String email,
+    String password,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/authenticate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return ApiResponse(data: AccountModel.fromJson(data));
+      } else if (response.statusCode == 400) {
+        final error =
+            jsonDecode(response.body)['error'] ?? 'Error de autenticación';
+        final errorLower = error.toLowerCase();
+
+        if (errorLower.contains('user not found')) {
+          return ApiResponse(error: 'Correo no registrado');
+        } else if (errorLower.contains('invalid password')) {
+          return ApiResponse(error: 'Contraseña incorrecta');
+        } else {
+          return ApiResponse(error: error);
+        }
+      } else {
+        return ApiResponse(error: 'Error de autenticación');
+      }
+    } catch (e) {
+      // Captura errores de red u otros y no lanza excepción
+      return ApiResponse(error: 'Error de conexión: $e');
     }
   }
 
@@ -45,32 +71,45 @@ class ApiService {
   }
 
   // Crear perfil
-  Future<void> createProfile({
+  Future<ApiResponse<void>> createProfile({
     required String userId,
     required String nombreUsuario,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/profile'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'cuenta_id': userId, 'nombre_usuario': nombreUsuario}),
-    );
-    if (response.statusCode != 201) {
-      throw Exception('Error al crear el perfil: ${response.body}');
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/profile'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'cuenta_id': userId,
+          'nombre_usuario': nombreUsuario,
+        }),
+      );
+      if (response.statusCode == 201) {
+        return ApiResponse(data: null);
+      } else {
+        return ApiResponse(error: 'Error al crear el perfil: ${response.body}');
+      }
+    } catch (e) {
+      return ApiResponse(error: 'Error de conexión: $e');
     }
   }
 
   // Validar si el nombre de usuario existe
-  Future<bool> usernameExists(String nombreUsuario) async {
-    final response = await http.get(
-      Uri.parse(
-        '$baseUrl/profile/check-username?nombre_usuario=$nombreUsuario',
-      ),
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['exists'] ?? false;
-    } else {
-      throw Exception('Error al validar el nombre de usuario');
+  Future<ApiResponse<bool>> usernameExists(String nombreUsuario) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/profile/check-username?nombre_usuario=$nombreUsuario',
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return ApiResponse(data: data['exists'] ?? false);
+      } else {
+        return ApiResponse(error: 'Error al validar el nombre de usuario');
+      }
+    } catch (e) {
+      return ApiResponse(error: 'Error de conexión: $e');
     }
   }
 

@@ -15,6 +15,8 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _controller = LoginController();
   bool _isLoading = false;
+  String? _correoError;   
+  String? _passwordError; 
 
   @override
   void dispose() {
@@ -23,37 +25,49 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   Future<void> _onLogin() async {
+    setState(() {
+      _correoError = null;
+      _passwordError = null;
+      _isLoading = true;
+    });
+
     if (_formKey.currentState!.validate()) {
-      setState(() { _isLoading = true; });
-      try {
-        await _controller.loginUser(
-          onSuccess: (String userId) async {
-            if (!mounted) return;
-            final apiService = ApiService();
-            final profile = await apiService.getProfile(userId);
-            if (!mounted) return;
-            setState(() { _isLoading = false; });
-            if (profile != null) {
-              Navigator.of(context).pushReplacementNamed(Routes.home);
+      await _controller.loginUser(
+        onSuccess: (String userId) async {
+          if (!mounted) return;
+          final apiService = ApiService();
+          final profile = await apiService.getProfile(userId);
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+          });
+          if (profile != null) {
+            Navigator.of(context).pushReplacementNamed(Routes.home);
+          } else {
+            Navigator.of(context).pushReplacementNamed(Routes.username);
+          }
+        },
+        onError: (String message) {
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+            if (message == 'Correo no registrado') {
+              _correoError = message;
+            } else if (message == 'Contraseña incorrecta') {
+              _passwordError = message;
             } else {
-              Navigator.of(context).pushReplacementNamed(Routes.username);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $message')),
+              );
             }
-          },
-          onError: (String message) {
-            if (!mounted) return;
-            setState(() { _isLoading = false; });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: $message')),
-            );
-          },
-        );
-      } catch (e) {
-        if (!mounted) return;
-        setState(() { _isLoading = false; });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al iniciar sesión: $e')),
-        );
-      }
+            _formKey.currentState!.validate();
+          });
+        },
+      );
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -68,7 +82,7 @@ class _LoginFormState extends State<LoginForm> {
             hint: 'Correo',
             icon: Icons.email,
             controller: _controller.correoController,
-            validator: (value) => validateCorreo(value),
+            validator: (value) => validateCorreo(value, _correoError),
           ),
           const SizedBox(height: 8),
           CustomTextField(
@@ -76,11 +90,11 @@ class _LoginFormState extends State<LoginForm> {
             icon: Icons.lock,
             obscure: true,
             controller: _controller.passwordController,
-            validator: (value) => validatePassword(value),
+            validator: (value) => validatePassword(value, _passwordError),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: _isLoading ? null : _onLogin, // Esto está bien, no recibe parámetros
+            onPressed: _isLoading ? null : _onLogin,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
               backgroundColor: Colors.green,

@@ -19,13 +19,16 @@ class LoginController {
     final email = correoController.text.trim();
     final password = passwordController.text;
 
-    try {
-      final account = await _apiService.loginUser(email, password);
+    final result = await _apiService.loginUser(email, password);
+
+    if (result.error != null) {
+      onError(result.error!);
+    } else if (result.data != null) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', account.id);
-      onSuccess(account.id);
-    } catch (e) {
-      onError(e.toString());
+      await prefs.setString('userId', result.data!.id);
+      onSuccess(result.data!.id);
+    } else {
+      onError('Error desconocido');
     }
   }
 }

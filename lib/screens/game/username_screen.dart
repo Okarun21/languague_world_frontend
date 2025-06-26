@@ -16,6 +16,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
   final _usernameController = TextEditingController();
   final _apiService = ApiService();
   String? backendError;
+  bool _isLoading = false;
 
   Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,20 +24,28 @@ class _UsernameScreenState extends State<UsernameScreen> {
   }
 
   Future<bool> usernameExists(String nombreUsuario) async {
-    try {
-      final response = await _apiService.usernameExists(nombreUsuario.trim());
-      return response;
-    } catch (e) {
+    final response = await _apiService.usernameExists(nombreUsuario.trim());
+    if (response.error != null) {
+      // Puedes mostrar un mensaje o loguear el error si quieres
       return false;
     }
+    return response.data ?? false;
   }
 
   void _submit() async {
+    setState(() {
+      backendError = null;
+      _isLoading = true;
+    });
+
     if (_formKey.currentState!.validate()) {
       final nombreUsuario = _usernameController.text.trim();
       final userId = await getUserId();
       if (userId == null) {
         if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Error: No se encontró el ID de la cuenta'),
@@ -45,44 +54,47 @@ class _UsernameScreenState extends State<UsernameScreen> {
         return;
       }
 
-      try {
-        final exists = await usernameExists(nombreUsuario);
-        if (exists) {
-          setState(() {
-            backendError = 'El nombre de usuario ya está en uso';
-          });
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('El nombre de usuario ya está en uso'),
-            ),
-          );
-          return;
-        }
-
-        await _apiService.createProfile(
-          userId: userId,
-          nombreUsuario: nombreUsuario,
-        );
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil creado con éxito')),
-        );
-
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          Routes.picturePerfil,
-          (route) => false,
-        );
-      } catch (e) {
+      final exists = await usernameExists(nombreUsuario);
+      if (exists) {
         setState(() {
-          backendError = 'Error al crear el perfil: $e';
+          backendError = 'El nombre de usuario ya está en uso';
+          _isLoading = false;
         });
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error al crear el perfil: $e')));
+        _formKey.currentState!.validate();
+        return;
       }
+
+      final createResponse = await _apiService.createProfile(
+        userId: userId,
+        nombreUsuario: nombreUsuario,
+      );
+
+      if (createResponse.error != null) {
+        setState(() {
+          backendError = 'Error al crear el perfil: ${createResponse.error}';
+          _isLoading = false;
+        });
+        _formKey.currentState!.validate();
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perfil creado con éxito')),
+      );
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        Routes.picturePerfil,
+        (route) => false,
+      );
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
