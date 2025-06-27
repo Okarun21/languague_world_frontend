@@ -9,3 +9,9 @@ Future<String?> getUserId() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('userId');
 }
+
+
+Future<void> clearUserSession() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
+}

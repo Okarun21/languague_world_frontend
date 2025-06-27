@@ -8,7 +8,7 @@ class ProfileModel {
   final String fotoPerfil;
   final DateTime fechaCreacion;
   final int nivelUsuario;
-  final AvatarModel? avatar;
+  final AvatarModel? avatar; 
   final ProgressModel? progreso;
   final List<AchievementModel> logros;
 
@@ -49,5 +49,27 @@ class ProfileModel {
       'progreso': progreso?.toJson(),
       'logros': logros.map((e) => e.toJson()).toList(),
     };
+  }
+
+  ProfileModel copyWith({
+    String? cuentaId,
+    String? nombreUsuario,
+    String? fotoPerfil,
+    DateTime? fechaCreacion,
+    int? nivelUsuario,
+    AvatarModel? avatar,
+    ProgressModel? progreso,
+    List<AchievementModel>? logros,
+  }) {
+    return ProfileModel(
+      cuentaId: cuentaId ?? this.cuentaId,
+      nombreUsuario: nombreUsuario ?? this.nombreUsuario,
+      fotoPerfil: fotoPerfil ?? this.fotoPerfil,
+      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
+      nivelUsuario: nivelUsuario ?? this.nivelUsuario,
+      avatar: avatar ?? this.avatar,
+      progreso: progreso ?? this.progreso,
+      logros: logros ?? this.logros,
+    );
   }
 }

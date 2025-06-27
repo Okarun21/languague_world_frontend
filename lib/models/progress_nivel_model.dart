@@ -28,4 +28,18 @@ class ProgressNivelModel {
       'tiempo_segundos': tiempoSegundos,
     };
   }
+
+  ProgressNivelModel copyWith({
+    String? nivelId,
+    DateTime? fechaCompletado,
+    int? puntuacion,
+    int? tiempoSegundos,
+  }) {
+    return ProgressNivelModel(
+      nivelId: nivelId ?? this.nivelId,
+      fechaCompletado: fechaCompletado ?? this.fechaCompletado,
+      puntuacion: puntuacion ?? this.puntuacion,
+      tiempoSegundos: tiempoSegundos ?? this.tiempoSegundos,
+    );
+  }
 }

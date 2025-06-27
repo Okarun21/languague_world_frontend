@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:language_world/providers/nivel_provider.dart';
+import 'package:language_world/providers/perfil_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:language_world/services/api_service.dart';
 import 'package:language_world/controllers/picture_perfil_controller.dart';
@@ -16,6 +17,8 @@ void main() {
         Provider(create: (context) => ApiService()),
         ChangeNotifierProvider(create: (context) => PicturePerfilController(context.read<ApiService>())),
         ChangeNotifierProvider(create: (_) => NivelProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),  
+        
       ],
       child: const MyApp(),
     ),

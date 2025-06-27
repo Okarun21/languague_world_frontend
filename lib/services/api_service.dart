@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:language_world/models/levels.dart';
 import 'package:language_world/models/profile_icon.dart';
+import 'package:language_world/models/progress_nivel_model.dart';
 import '../models/account_model.dart';
 
 class ApiResponse<T> {
@@ -12,9 +13,8 @@ class ApiResponse<T> {
 }
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  static const String baseUrl = 'https://languague-world-backend.onrender.com';
 
-  // Login sin lanzar excepciones, devuelve ApiResponse con data o error
   Future<ApiResponse<AccountModel>> loginUser(
     String email,
     String password,
@@ -45,7 +45,6 @@ class ApiService {
         return ApiResponse(error: 'Error de autenticación');
       }
     } catch (e) {
-      // Captura errores de red u otros y no lanza excepción
       return ApiResponse(error: 'Error de conexión: $e');
     }
   }
@@ -162,6 +161,41 @@ class ApiService {
     );
     if (response.statusCode != 200) {
       throw Exception('Error al actualizar el idioma');
+    }
+  }
+
+  Future<void> actualizarProgresoNivel({
+    required String cuentaId,
+    required String idioma,
+    required ProgressNivelModel progresoNivel,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/profile/$cuentaId/progreso'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'idioma': idioma,
+        'progresoNivel': progresoNivel.toJson(),
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('Error al actualizar progreso: ${response.statusCode}');
+      print('Respuesta del servidor: ${response.body}');
+      throw Exception('Error al actualizar progreso');
+    }
+  }
+
+  Future<void> actualizarNivelUsuario({
+    required String cuentaId,
+    required int nivelUsuario,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/profile/$cuentaId/nivel'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'nivel_usuario': nivelUsuario}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar nivel');
     }
   }
 

@@ -1,37 +1,63 @@
 import 'package:language_world/models/progress_nivel_model.dart';
 
 class ProgressModel {
-  final Map<String, List<ProgressNivelModel>>? es;
-  final Map<String, List<ProgressNivelModel>>? en;
-  final Map<String, List<ProgressNivelModel>>? fr;
+  final List<ProgressNivelModel>? es;
+  final List<ProgressNivelModel>? en;
+  final List<ProgressNivelModel>? fr;
 
-  ProgressModel({
-    this.es,
-    this.en,
-    this.fr,
-  });
+  ProgressModel({this.es, this.en, this.fr});
 
   factory ProgressModel.fromJson(Map<String, dynamic> json) {
+    List<ProgressNivelModel>? parseList(dynamic list) {
+      if (list == null) return null;
+      return (list as List)
+          .map((e) => ProgressNivelModel.fromJson(e))
+          .toList();
+    }
+
     return ProgressModel(
-      es: _parseMap(json['es']),
-      en: _parseMap(json['en']),
-      fr: _parseMap(json['fr']),
+      es: parseList(json['es']),
+      en: parseList(json['en']),
+      fr: parseList(json['fr']),
     );
   }
 
-  static Map<String, List<ProgressNivelModel>>? _parseMap(dynamic map) {
-    if (map == null) return null;
-    return (map as Map<String, dynamic>).map((key, value) {
-      final list = (value as List).map((e) => ProgressNivelModel.fromJson(e)).toList();
-      return MapEntry(key, list);
-    });
+  Map<String, dynamic> toJson() {
+    List<Map<String, dynamic>>? listToJson(List<ProgressNivelModel>? list) {
+      if (list == null) return null;
+      return list.map((e) => e.toJson()).toList();
+    }
+
+    return {
+      'es': listToJson(es),
+      'en': listToJson(en),
+      'fr': listToJson(fr),
+    };
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'es': es?.map((key, value) => MapEntry(key, value.map((e) => e.toJson()).toList())),
-      'en': en?.map((key, value) => MapEntry(key, value.map((e) => e.toJson()).toList())),
-      'fr': fr?.map((key, value) => MapEntry(key, value.map((e) => e.toJson()).toList())),
-    };
+  int get puntos {
+    int total = 0;
+    void sumar(List<ProgressNivelModel>? list) {
+      if (list == null) return;
+      for (var nivel in list) {
+        total += nivel.puntuacion;
+      }
+    }
+    sumar(es);
+    sumar(en);
+    sumar(fr);
+    return total;
+  }
+
+  ProgressModel copyWith({
+    List<ProgressNivelModel>? es,
+    List<ProgressNivelModel>? en,
+    List<ProgressNivelModel>? fr,
+  }) {
+    return ProgressModel(
+      es: es ?? this.es,
+      en: en ?? this.en,
+      fr: fr ?? this.fr,
+    );
   }
 }

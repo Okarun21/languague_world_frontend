@@ -1,11 +1,17 @@
 import 'dart:io'; // Para exit(0)
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Para SystemNavigator.pop()
+import 'package:language_world/models/perfil_model.dart';
 import 'package:language_world/services/api_service.dart';
 import 'package:language_world/utils/shared_prefs_utils.dart';
 import 'package:language_world/widgets/profile_info_for_home.dart';
 import 'package:language_world/widgets/languague_selector.dart';
 import 'package:language_world/routes/routes.dart';
+import 'package:provider/provider.dart';
+import 'package:language_world/providers/perfil_provider.dart';
+import 'package:language_world/models/progress_nivel_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     cargarUserIdYPerfil();
+    _cargarIdiomaGuardado();
+  }
+
+  Future<void> _cargarIdiomaGuardado() async {
+    final prefs = await SharedPreferences.getInstance();
+    final idiomaGuardado = prefs.getString('idioma_seleccionado') ?? 'es';
+
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    profileProvider.idiomaSeleccionado = idiomaGuardado;
+
+    setState(() {
+      selectedLanguage = idiomaGuardado;
+    });
   }
 
   Future<void> cargarUserIdYPerfil() async {
@@ -49,10 +68,15 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final perfilData = await apiService.getProfile(userId!);
       if (perfilData != null) {
+        final profileModel = ProfileModel.fromJson(perfilData);
+
+        // Actualiza el provider con el perfil cargado
+        Provider.of<ProfileProvider>(context, listen: false).setProfile(profileModel);
+
         setState(() {
-          username = perfilData['nombre_usuario'] ?? 'Sin nombre';
-          nivel = int.tryParse(perfilData['nivel_usuario'].toString()) ?? 0;
-          profileImageUrl = perfilData['fotoPerfil'] ?? '';
+          username = profileModel.nombreUsuario;
+          nivel = profileModel.nivelUsuario;
+          profileImageUrl = profileModel.fotoPerfil;
           isLoading = false;
         });
       } else {
@@ -77,8 +101,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _mostrarMenuConfiguracion() {
+    Navigator.pushNamed(context, Routes.settings);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileProvider>(context);
+    final progresoIdioma = profileProvider.progresoIdioma;
+
     if (isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -101,16 +132,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ProfileInfoForHome(
-                        profileImageUrl: profileImageUrl,
-                        username: username,
-                        nivel: nivel,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, Routes.profileStats);
+                        },
+                        child: ProfileInfoForHome(
+                          profileImageUrl: profileImageUrl,
+                          username: username,
+                          nivel: nivel,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       LanguageSelector(
-                        selectedLanguage: selectedLanguage,
-                        onChanged: (val) {
+                        selectedLanguage: profileProvider.idiomaSeleccionado,
+                        onChanged: (val) async {
                           if (val != null) {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('idioma_seleccionado', val);
+                            profileProvider.idiomaSeleccionado = val;
                             setState(() {
                               selectedLanguage = val;
                             });
@@ -119,17 +158,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-
                   IconButton(
                     icon: const Icon(Icons.settings),
                     iconSize: 28,
-                    onPressed: () {},
+                    onPressed: _mostrarMenuConfiguracion,
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: 40),
+
             Expanded(
               child: Center(
                 child: Image.network(
@@ -140,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
+                    
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Center(

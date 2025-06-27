@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:language_world/models/carta.dart';
+import 'package:language_world/models/progress_nivel_model.dart';
 import 'package:language_world/providers/nivel_provider.dart';
-import 'package:language_world/widgets/carta_widget.dart';
-import 'package:language_world/widgets/nivel_info_widget.dart';
+import 'package:language_world/providers/perfil_provider.dart';
 import 'package:language_world/routes/routes.dart';
+import 'package:language_world/services/api_service.dart';
+import 'package:language_world/widgets/memorama/cartas_grid.dart';
+import 'package:language_world/widgets/nivel_info_widget.dart';
 import 'package:provider/provider.dart';
 
 class MemoramaScreen extends StatefulWidget {
@@ -20,14 +24,115 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
   bool _bloqueado = false;
   bool _completado = false;
 
+  Stopwatch _stopwatch = Stopwatch();
+  Timer? _timer;
+  int _segundosTranscurridos = 0;
+
   @override
   void initState() {
     super.initState();
-    final nivel =
-        Provider.of<NivelProvider>(context, listen: false).nivelSeleccionado!;
+    final nivel = Provider.of<NivelProvider>(context, listen: false).nivelSeleccionado!;
     _cartasBarajadas = List.of(nivel.cartas);
     _cartasBarajadas.shuffle();
     visibles = List.filled(_cartasBarajadas.length, false);
+
+    _stopwatch.start();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {
+        _segundosTranscurridos = _stopwatch.elapsed.inSeconds;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _stopwatch.stop();
+    super.dispose();
+  }
+
+  int _calcularPuntos(int segundos) {
+    if (segundos <= 30) return 100;
+    if (segundos <= 60) return 70;
+    if (segundos <= 90) return 50;
+    return 30;
+  }
+
+  Future<void> _guardarProgresoYNivelConProviders(
+      int puntos, ProfileProvider profileProvider, NivelProvider nivelProvider) async {
+    final profile = profileProvider.profile;
+    final nivel = nivelProvider.nivelSeleccionado;
+
+    if (profile == null || nivel == null) return;
+
+    final progresoNivel = ProgressNivelModel(
+      nivelId: nivel.id,
+      fechaCompletado: DateTime.now(),
+      puntuacion: puntos,
+      tiempoSegundos: _segundosTranscurridos,
+    );
+
+    try {
+      // Guardar progreso en backend
+      await ApiService().actualizarProgresoNivel(
+        cuentaId: profile.cuentaId,
+        idioma: nivel.idioma,
+        progresoNivel: progresoNivel,
+      );
+
+      // Calcular nuevos puntos y nivel
+      int nuevosPuntos = (profile.progreso?.puntos ?? 0) + puntos;
+      int nuevoNivel = (nuevosPuntos ~/ 100) + 1;
+
+      // Actualizar nivel en backend y provider si subió
+      if (nuevoNivel > profile.nivelUsuario) {
+        await ApiService().actualizarNivelUsuario(
+          cuentaId: profile.cuentaId,
+          nivelUsuario: nuevoNivel,
+        );
+        profileProvider.actualizarNivelUsuario(nuevoNivel);
+      }
+
+      // Actualizar progreso local agregando el nuevo nivel completado
+      profileProvider.agregarProgresoNivel(progresoNivel);
+    } catch (e) {
+      print('Error guardando progreso: $e');
+    }
+  }
+
+  void _mostrarDialogoFinal(int puntos) {
+    // Extraemos providers ANTES de abrir el diálogo para evitar errores de contexto
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final nivelProvider = Provider.of<NivelProvider>(context, listen: false);
+    final parentContext = context; // Guardamos el context padre para navegación
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('¡Felicidades!'),
+        content: Text(
+          'Completaste el memorama en $_segundosTranscurridos segundos.\n'
+          'Puntos obtenidos: $puntos',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext); // Cerramos diálogo con su context
+              await _guardarProgresoYNivelConProviders(puntos, profileProvider, nivelProvider);
+              if (!mounted) return;
+              // Navegamos con el context padre guardado
+              Navigator.pushNamedAndRemoveUntil(
+                parentContext,
+                Routes.niveles,
+                (route) => false,
+              );
+            },
+            child: const Text('Volver a Niveles'),
+          ),
+        ],
+      ),
+    );
   }
 
   void onCartaTap(int index) {
@@ -45,6 +150,10 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
 
           if (visibles.every((v) => v)) {
             _completado = true;
+            _stopwatch.stop();
+            _timer?.cancel();
+            int puntos = _calcularPuntos(_segundosTranscurridos);
+            _mostrarDialogoFinal(puntos);
           }
         } else {
           _bloqueado = true;
@@ -69,12 +178,7 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
     if (nivel == null) {
       return Scaffold(
         appBar: AppBar(
-          centerTitle: false,
-          titleSpacing: 16,
-          title: const Text(
-            'Memorama',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          ),
+          title: const Text('Memorama'),
         ),
         body: const Center(child: Text('No se ha seleccionado ningún nivel')),
       );
@@ -82,12 +186,7 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
-        titleSpacing: 16,
-        title: Text(
-          'Memorama - ${nivel.nombre}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
+        title: Text('Memorama - ${nivel.nombre} - Tiempo: $_segundosTranscurridos s'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -102,53 +201,12 @@ class _MemoramaScreenState extends State<MemoramaScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: GridView.builder(
-                itemCount: _cartasBarajadas.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemBuilder: (context, index) {
-                  final carta = _cartasBarajadas[index];
-                  return CartaWidget(
-                    tipo: carta.tipo,
-                    valor: carta.valor,
-                    estaVisible: visibles[index],
-                    onTap: () => onCartaTap(index),
-                  );
-                },
+              child: CartasGrid(
+                cartas: _cartasBarajadas,
+                visibles: visibles,
+                onTap: onCartaTap,
               ),
             ),
-            if (_completado) ...[
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      '¡Felicidades! Completaste el memorama.',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          Routes.niveles,
-                          (route) => false,
-                        );
-                      },
-                      child: const Text('Volver a Niveles'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
           ],
         ),
       ),

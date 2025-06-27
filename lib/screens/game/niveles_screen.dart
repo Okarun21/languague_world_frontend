@@ -63,7 +63,19 @@ class _NivelScreenState extends State<NivelScreen> {
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     nivelProvider.seleccionarNivel(nivel);
-                    Navigator.pushNamed(context, Routes.memorama);
+                    if (nivel.modo == 'memorama') {
+                      Navigator.pushNamed(context, Routes.memorama);
+                    } else if (nivel.modo == 'emparejamiento') {
+                      Navigator.pushNamed(context, Routes.emparejamiento);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Modo de juego no definido para este nivel',
+                          ),
+                        ),
+                      );
+                    }
                   },
                 );
               },

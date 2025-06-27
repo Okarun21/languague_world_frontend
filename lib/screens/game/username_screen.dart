@@ -26,7 +26,6 @@ class _UsernameScreenState extends State<UsernameScreen> {
   Future<bool> usernameExists(String nombreUsuario) async {
     final response = await _apiService.usernameExists(nombreUsuario.trim());
     if (response.error != null) {
-      // Puedes mostrar un mensaje o loguear el error si quieres
       return false;
     }
     return response.data ?? false;
@@ -82,9 +81,9 @@ class _UsernameScreenState extends State<UsernameScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perfil creado con éxito')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Perfil creado con éxito')));
 
       Navigator.pushNamedAndRemoveUntil(
         context,
